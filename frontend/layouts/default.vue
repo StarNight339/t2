@@ -1,31 +1,21 @@
 <template>
   <v-app>
-    <!-- แถบบนสุด: ติดต่อ -->
-    <div class="topbar d-none d-md-block">
-      <div class="container-x d-flex align-center justify-space-between py-1 text-caption">
-        <div class="d-flex ga-4">
-          <span v-if="s.phone"><v-icon size="14" icon="mdi-phone" /> {{ s.phone }}</span>
-          <span v-if="s.email"><v-icon size="14" icon="mdi-email-outline" /> {{ s.email }}</span>
-        </div>
-        <div class="d-flex ga-3 align-center">
-          <a v-if="s.facebook_url" :href="s.facebook_url" target="_blank" rel="noopener" aria-label="Facebook"><v-icon size="16" icon="mdi-facebook" /></a>
-          <NuxtLink to="/admin/login"><v-icon size="14" icon="mdi-lock-outline" /> สำหรับเจ้าหน้าที่</NuxtLink>
-        </div>
-      </div>
-    </div>
-
-    <!-- ส่วนหัว -->
+    <!-- ส่วนหัว: พื้นขาว เส้นขอบล่าง แบบเดียวกับหลังบ้าน -->
     <header class="header">
-      <div class="container-x d-flex align-center py-3">
+      <div class="container-x d-flex align-center ga-4 py-3">
         <NuxtLink to="/" class="d-flex align-center ga-3 brand">
-          <img :src="s.logo_url || '/logo.svg'" alt="ตราวิทยาลัย" width="56" height="56">
+          <img :src="s.logo_url || '/logo.svg'" alt="ตราวิทยาลัย" width="48" height="48">
           <div>
             <div class="brand-th">{{ s.site_name || 'วิทยาลัยเทคนิคกระบี่' }}</div>
             <div class="brand-en">{{ s.site_name_en || 'Krabi Technical College' }}</div>
           </div>
         </NuxtLink>
         <v-spacer />
-        <v-btn class="d-md-none" icon="mdi-menu" variant="text" color="white" aria-label="เปิดเมนู" @click="drawer = true" />
+        <form class="d-none d-md-block search" role="search" @submit.prevent="doSearch">
+          <v-text-field v-model="q" placeholder="ค้นหาข่าว..." prepend-inner-icon="mdi-magnify" hide-details density="compact" bg-color="#F5F7FA" />
+        </form>
+        <v-btn class="d-none d-md-flex" to="/admin/login" variant="tonal" color="primary" prepend-icon="mdi-lock-outline">เจ้าหน้าที่</v-btn>
+        <v-btn class="d-md-none" icon="mdi-menu" variant="text" color="primary" aria-label="เปิดเมนู" @click="drawer = true" />
       </div>
 
       <!-- เมนูหลัก (จอใหญ่) -->
@@ -34,7 +24,7 @@
           <template v-for="m in menu" :key="m.label">
             <v-menu v-if="m.children" open-on-hover location="bottom start">
               <template #activator="{ props }">
-                <v-btn v-bind="props" variant="text" color="white" rounded="0" class="nav-btn" :class="{ active: isActive(m) }" append-icon="mdi-chevron-down">
+                <v-btn v-bind="props" variant="text" rounded="0" class="nav-btn" :class="{ active: isActive(m) }" append-icon="mdi-chevron-down">
                   {{ m.label }}
                 </v-btn>
               </template>
@@ -42,13 +32,13 @@
                 <v-list-item v-for="c in m.children" :key="c.to" :to="c.to" :title="c.label" />
               </v-list>
             </v-menu>
-            <v-btn v-else :to="m.to" variant="text" color="white" rounded="0" class="nav-btn" :class="{ active: isActive(m) }">{{ m.label }}</v-btn>
+            <v-btn v-else :to="m.to" variant="text" rounded="0" class="nav-btn" :class="{ active: isActive(m) }">{{ m.label }}</v-btn>
           </template>
           <v-spacer />
-          <form class="nav-search" role="search" @submit.prevent="doSearch">
-            <input v-model="q" type="search" placeholder="ค้นหาข่าว..." aria-label="ค้นหาข่าว">
-            <button type="submit" aria-label="ค้นหา"><v-icon icon="mdi-magnify" size="20" /></button>
-          </form>
+          <div class="d-flex ga-4 text-body-2 text-medium-emphasis">
+            <span v-if="s.phone"><v-icon size="16" icon="mdi-phone-outline" /> {{ s.phone }}</span>
+            <a v-if="s.facebook_url" :href="s.facebook_url" target="_blank" rel="noopener" aria-label="Facebook"><v-icon size="18" icon="mdi-facebook" color="primary" /></a>
+          </div>
         </div>
       </nav>
     </header>
@@ -142,19 +132,14 @@ function doSearch() {
 </script>
 
 <style scoped>
-.topbar { background: var(--kb-navy-dark); color: #CFD8E3; }
-.topbar a:hover { color: #fff; }
-.header { background: var(--kb-navy); color: #fff; }
-.brand img { border-radius: 50%; background: #fff; }
-.brand-th { font-family: 'Prompt', sans-serif; font-size: 1.35rem; font-weight: 500; line-height: 1.2; }
-.brand-en { font-size: .85rem; opacity: .8; letter-spacing: .5px; }
-.mainnav { background: rgba(0, 0, 0, .18); border-top: 1px solid rgba(255, 255, 255, .08); }
-.nav-btn { height: 48px !important; font-weight: 400; }
-.nav-btn.active { box-shadow: inset 0 -3px 0 var(--kb-gold); }
-.nav-search { display: flex; align-items: center; background: rgba(255, 255, 255, .12); border-radius: 8px; padding: 0 4px 0 12px; }
-.nav-search input { background: transparent; border: 0; outline: 0; color: #fff; width: 170px; height: 34px; font-family: inherit; }
-.nav-search input::placeholder { color: rgba(255, 255, 255, .7); }
-.nav-search button { color: #fff; display: flex; padding: 4px; }
+.header { background: #fff; border-bottom: 1px solid #E3E8EE; position: sticky; top: 0; z-index: 10; }
+.brand-th { font-family: 'Prompt', sans-serif; font-size: 1.25rem; font-weight: 500; line-height: 1.2; color: var(--kb-navy); }
+.brand-en { font-size: .8rem; color: #6B7A8C; letter-spacing: .3px; }
+.search { width: 260px; }
+.mainnav { border-top: 1px solid #EEF1F5; }
+.nav-btn { height: 46px !important; font-weight: 400; color: #37474F !important; }
+.nav-btn :deep(.v-btn__overlay) { display: none; }
+.nav-btn.active { color: var(--kb-navy) !important; box-shadow: inset 0 -3px 0 var(--kb-gold); font-weight: 500; }
 .footer { background: var(--kb-navy-dark); color: #E3E9F0; margin-top: 48px; }
 .footer-h { font-family: 'Prompt', sans-serif; font-weight: 500; margin-bottom: 10px; color: var(--kb-gold); }
 .footer-link { display: block; padding: 3px 0; opacity: .85; font-size: .95rem; }
