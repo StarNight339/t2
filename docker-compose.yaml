@@ -1,0 +1,67 @@
+# เว็บประชาสัมพันธ์ วิทยาลัยเทคนิคกระบี่
+# รันทั้งหมด:  docker compose up -d --build
+#   เว็บไซต์     http://localhost:3000
+#   หลังบ้าน     http://localhost:3000/admin   (admin@kbtc.ac.th / admin1234)
+#   phpMyAdmin  http://localhost:8080
+services:
+  db:
+    image: mysql:8.0
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: kbtc_pr
+      TZ: Asia/Bangkok
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    environment:
+      PMA_HOST: db
+    ports:
+      - "8080:80"
+    depends_on: [db]
+
+  api:
+    build: ./backend
+    environment:
+      PORT: 7000
+      NODE_ENV: production
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: kbtc_pr
+      DB_USER: root
+      DB_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      JWT_SECRET: ${JWT_SECRET:-change-this-to-a-long-random-string}
+      JWT_EXPIRES: 8h
+      TZ: Asia/Bangkok
+    volumes:
+      - ./backend/uploads:/app/uploads
+    ports:
+      - "7000:7000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    environment:
+      NUXT_API_INTERNAL: http://api:7000
+      NUXT_PUBLIC_SITE_URL: ${SITE_URL:-http://localhost:3000}
+    ports:
+      - "3000:3000"
+    depends_on: [api]
+    restart: unless-stopped
+
+volumes:
+  db_data:
